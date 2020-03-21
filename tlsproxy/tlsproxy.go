@@ -41,6 +41,7 @@ type Config struct {
 	Acl          string
 	Upstreamport string
 	Upstreams    []string
+	Fallback     string
 	Deadline     int64
 	Idle         int64
 }
@@ -70,7 +71,8 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 
 	logger := tlsProxy.logger.New("src", downstream.RemoteAddr())
 
-	if !tlsProxy.access.AllowedAddr(downstream.RemoteAddr()) {
+	allowedProxy := tlsProxy.access.AllowedAddr(downstream.RemoteAddr())
+	if !allowedProxy && tlsProxy.config.Fallback == "" {
 		logger.Warn("access denied")
 		return
 	}
@@ -125,17 +127,26 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 		logger.Warn("error parsing ClientHello")
 		return
 	}
-	if m.serverName == "" {
-		logger.Error("no server name found")
-		return
-	}
 	target := m.serverName + ":" + tlsProxy.config.Upstreamport
+	if m.serverName == "" {
+		if tlsProxy.config.Fallback == "" {
+			logger.Error("upstream not allowed")
+			return
+		} else {
+			target = tlsProxy.config.Fallback
+		}
+	}
 
 	logger = logger.New("upstream", target)
 
-	if util.ManyGlob(tlsProxy.config.Upstreams, target) == false {
-		logger.Error("upstream not allowed")
-		return
+	proxyMatch := allowedProxy && util.ManyGlob(tlsProxy.config.Upstreams, target)
+	if !proxyMatch {
+		if tlsProxy.config.Fallback == "" {
+			logger.Error("upstream not allowed")
+			return
+		} else {
+			target = tlsProxy.config.Fallback
+		}
 	}
 	uaddr, err := net.ResolveTCPAddr("tcp", target)
 	if err != nil {

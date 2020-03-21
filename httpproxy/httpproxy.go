@@ -42,6 +42,7 @@ type Config struct {
 	Acl          string
 	Upstreamport string
 	Upstreams    []string
+	Fallback     string
 	Deadline     int64
 	Idle         int64
 	LogRequest   bool
@@ -72,7 +73,8 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 
 	logger := httpProxy.logger.New("src", downstream.RemoteAddr())
 
-	if !httpProxy.access.AllowedAddr(downstream.RemoteAddr()) {
+	allowedProxy := httpProxy.access.AllowedAddr(downstream.RemoteAddr())
+	if !allowedProxy && httpProxy.config.Fallback == "" {
 		logger.Warn("access denied")
 		return
 	}
@@ -110,8 +112,12 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 		}
 	}
 	if hostname == "" {
-		logger.Error("no hostname found", "request", requestLine)
-		return
+		if httpProxy.config.Fallback == "" {
+			logger.Error("no hostname found", "request", requestLine)
+			return
+		} else {
+			hostname = httpProxy.config.Fallback
+		}
 	}
 	if strings.Index(hostname, ":") == -1 {
 		hostname = hostname + ":" + httpProxy.config.Upstreamport
@@ -121,9 +127,14 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 	if httpProxy.config.LogRequest {
 		logger = logger.New("request", requestLine)
 	}
-	if util.ManyGlob(httpProxy.config.Upstreams, hostname) == false {
-		logger.Error("upstream not allowed")
-		return
+	proxyMatch := allowedProxy && util.ManyGlob(httpProxy.config.Upstreams, hostname)
+	if !proxyMatch {
+		if httpProxy.config.Fallback == "" {
+			logger.Error("upstream not allowed")
+			return
+		} else {
+			hostname = httpProxy.config.Fallback
+		}
 	}
 	uaddr, err := net.ResolveTCPAddr("tcp", hostname)
 	if err != nil {
