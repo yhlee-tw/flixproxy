@@ -24,7 +24,7 @@
 package main
 
 const (
-	VERSION = "0.20200321"
+	VERSION = "0.20201122"
 )
 
 // eof
