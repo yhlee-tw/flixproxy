@@ -203,7 +203,7 @@ func (dnsProxy *DNSProxy) getMessageReply(req *dns.Msg) *dns.Msg {
 		return makeAnswerMessage(req, answer)
 	}
 
-	if q.Qtype == dns.TypeAAAA {
+	if q.Qtype == dns.TypeAAAA || q.Qtype == dns.TypeHTTPS {
 		// check if corresponding spoofed A record exists
 		q2 := q
 		q2.Qtype = dns.TypeA
