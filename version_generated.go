@@ -23,8 +23,6 @@
 
 package main
 
-const (
-	VERSION = "0.20201122"
-)
+var VERSION = "0.20201130"
 
 // eof

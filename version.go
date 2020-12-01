@@ -25,9 +25,7 @@
 package main
 
 /* @REMOVE@
-const (
-	VERSION = "0.@DATE@"
-)
+var VERSION = "0.@DATE@"
 @REMOVE@ */
 
 // eof
