@@ -203,16 +203,15 @@ func (dnsProxy *DNSProxy) getMessageReply(req *dns.Msg) *dns.Msg {
 		return makeAnswerMessage(req, answer)
 	}
 
-	if q.Qtype == dns.TypeAAAA || q.Qtype == dns.TypeHTTPS {
+	switch q.Qtype {
+	case dns.TypeAAAA, dns.TypeHTTPS:
 		// check if corresponding spoofed A record exists
 		q2 := q
 		q2.Qtype = dns.TypeA
 		if dnsProxy.getQuestionAnswer(q2) != nil {
-			// return NXDOMAIN
+			// return NoAnswer
 			// client should retry looking up for TypeA
-			m := new(dns.Msg)
-			m.SetRcode(req, dns.RcodeNameError)
-			return m
+			return makeAnswerMessage(req, nil)
 		}
 	}
 	return nil
