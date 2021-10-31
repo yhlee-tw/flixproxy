@@ -42,6 +42,7 @@ type Config struct {
 	Upstreamport string
 	Upstreams    []string
 	Fallback     string
+	ProxyProto   bool
 	Deadline     int64
 	Idle         int64
 }
@@ -128,12 +129,14 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 		return
 	}
 	target := m.serverName + ":" + tlsProxy.config.Upstreamport
+	proxyProtocol := false
 	if m.serverName == "" {
 		if tlsProxy.config.Fallback == "" {
 			logger.Error("upstream not allowed")
 			return
 		} else {
 			target = tlsProxy.config.Fallback
+			proxyProtocol = tlsProxy.config.ProxyProto
 		}
 	}
 
@@ -146,6 +149,7 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 			return
 		} else {
 			target = tlsProxy.config.Fallback
+			proxyProtocol = tlsProxy.config.ProxyProto
 		}
 	}
 	uaddr, err := net.ResolveTCPAddr("tcp", target)
@@ -163,6 +167,13 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 
 	util.SetDeadlineSeconds(upstream, tlsProxy.config.Deadline)
 
+	// write proxy protocol to downstream
+	if proxyProtocol {
+		if err := util.WriteProxyProtocol(upstream, downstream); err != nil {
+			logger.Error("error writing proxy protocol", "err", err)
+			return
+		}
+	}
 	if _, err = upstream.Write(append(append(append(firstByte, versionBytes...), restLengthBytes...), rest...)); err != nil {
 		logger.Error("error writing to upstream", "err", err)
 		return

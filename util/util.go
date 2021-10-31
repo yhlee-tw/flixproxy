@@ -23,11 +23,13 @@ package util
 
 import (
 	"bufio"
-	"github.com/ryanuber/go-glob"
-	"gopkg.in/inconshreveable/log15.v2"
 	"io"
 	"net"
 	"time"
+
+	"github.com/pires/go-proxyproto"
+	"github.com/ryanuber/go-glob"
+	"gopkg.in/inconshreveable/log15.v2"
 )
 
 func ManyGlob(globs []string, str string) (matched bool) {
@@ -131,6 +133,12 @@ func ListenAndServe(listen string, handler Handler, logger log15.Logger) {
 		}
 		go handler.HandleConn(conn)
 	}
+}
+
+func WriteProxyProtocol(srvConn, cliConn *net.TCPConn) error {
+	h := proxyproto.HeaderProxyFromAddrs(1, cliConn.RemoteAddr(), srvConn.LocalAddr())
+	_, err := h.WriteTo(srvConn)
+	return err
 }
 
 // the following is from https://gist.github.com/jbardin/821d08cb64c01c84b81a

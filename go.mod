@@ -5,6 +5,7 @@ go 1.17
 require (
 	github.com/miekg/dns v1.1.43
 	github.com/ogier/pflag v0.0.1
+	github.com/pires/go-proxyproto v0.6.1
 	github.com/ryanuber/go-glob v1.0.0
 	gopkg.in/inconshreveable/log15.v2 v2.0.0-20200109203555-b30bc20e4fd1
 	gopkg.in/yaml.v2 v2.4.0

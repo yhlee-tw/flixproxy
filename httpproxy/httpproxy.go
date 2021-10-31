@@ -43,6 +43,7 @@ type Config struct {
 	Upstreamport string
 	Upstreams    []string
 	Fallback     string
+	ProxyProto   bool
 	Deadline     int64
 	Idle         int64
 	LogRequest   bool
@@ -81,6 +82,7 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 
 	reader := bufio.NewReader(downstream)
 	hostname := ""
+	proxyProtocol := false
 	var lines []string
 	var requestLine string
 	for {
@@ -117,6 +119,7 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 			return
 		} else {
 			hostname = httpProxy.config.Fallback
+			proxyProtocol = httpProxy.config.ProxyProto
 		}
 	}
 	if strings.Index(hostname, ":") == -1 {
@@ -134,6 +137,7 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 			return
 		} else {
 			hostname = httpProxy.config.Fallback
+			proxyProtocol = httpProxy.config.ProxyProto
 		}
 	}
 	uaddr, err := net.ResolveTCPAddr("tcp", hostname)
@@ -168,6 +172,13 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 	if _, err = upstream.Write(buffered); err != nil {
 		logger.Error("error writing to upstream", "err", err)
 		return
+	}
+	// write proxy protocol to downstream
+	if proxyProtocol {
+		if err := util.WriteProxyProtocol(upstream, downstream); err != nil {
+			logger.Error("error writing proxy protocol", "err", err)
+			return
+		}
 	}
 	// reset current deadlines
 	util.SetDeadlineSeconds(upstream, 0)
