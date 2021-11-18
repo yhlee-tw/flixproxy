@@ -167,7 +167,7 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 
 	util.SetDeadlineSeconds(upstream, tlsProxy.config.Deadline)
 
-	// write proxy protocol to downstream
+	// write proxy protocol to upstream
 	if proxyProtocol {
 		if err := util.WriteProxyProtocol(upstream, downstream); err != nil {
 			logger.Error("error writing proxy protocol", "err", err)

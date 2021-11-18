@@ -155,6 +155,13 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 
 	util.SetDeadlineSeconds(upstream, httpProxy.config.Deadline)
 
+	// write proxy protocol to upstream
+	if proxyProtocol {
+		if err := util.WriteProxyProtocol(upstream, downstream); err != nil {
+			logger.Error("error writing proxy protocol", "err", err)
+			return
+		}
+	}
 	for _, line := range lines {
 		if _, err = upstream.Write([]byte(line)); err != nil {
 			logger.Error("error writing to upstream", "err", err)
@@ -172,13 +179,6 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 	if _, err = upstream.Write(buffered); err != nil {
 		logger.Error("error writing to upstream", "err", err)
 		return
-	}
-	// write proxy protocol to downstream
-	if proxyProtocol {
-		if err := util.WriteProxyProtocol(upstream, downstream); err != nil {
-			logger.Error("error writing proxy protocol", "err", err)
-			return
-		}
 	}
 	// reset current deadlines
 	util.SetDeadlineSeconds(upstream, 0)
