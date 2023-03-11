@@ -1,6 +1,6 @@
 module github.com/snabb/flixproxy
 
-go 1.17
+go 1.20
 
 require (
 	github.com/miekg/dns v1.1.43
@@ -16,5 +16,5 @@ require (
 	github.com/mattn/go-colorable v0.1.11 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6 // indirect
-	golang.org/x/sys v0.0.0-20211003122950-b1ebd4e1001c // indirect
+	golang.org/x/sys v0.6.0 // indirect
 )
