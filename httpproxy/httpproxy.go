@@ -138,6 +138,7 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 		} else {
 			hostname = httpProxy.config.Fallback
 			proxyProtocol = httpProxy.config.ProxyProto
+			logger = logger.New("fallback", hostname)
 		}
 	}
 	uaddr, err := net.ResolveTCPAddr("tcp", hostname)

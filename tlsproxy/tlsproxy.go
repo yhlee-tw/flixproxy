@@ -150,6 +150,7 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 		} else {
 			target = tlsProxy.config.Fallback
 			proxyProtocol = tlsProxy.config.ProxyProto
+			logger = logger.New("fallback", target)
 		}
 	}
 	uaddr, err := net.ResolveTCPAddr("tcp", target)
