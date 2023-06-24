@@ -44,6 +44,7 @@ type Config struct {
 	Upstreams    []string
 	Fallback     string
 	ProxyProto   bool
+	SNIOnly      bool
 	Deadline     int64
 	Idle         int64
 }
@@ -132,6 +133,9 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 	target := m.serverName + ":" + tlsProxy.config.Upstreamport
 	proxyProtocol := false
 	if m.serverName == "" {
+		if tlsProxy.config.SNIOnly {
+			return
+		}
 		if tlsProxy.config.Fallback == "" {
 			logger.Error("upstream not allowed")
 			return
