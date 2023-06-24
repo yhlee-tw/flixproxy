@@ -26,6 +26,11 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"os/signal"
+	"runtime"
+	"syscall"
+
 	"github.com/ogier/pflag"
 	"github.com/snabb/flixproxy/access"
 	"github.com/snabb/flixproxy/dnsproxy"
@@ -33,11 +38,6 @@ import (
 	"github.com/snabb/flixproxy/tlsproxy"
 	"gopkg.in/inconshreveable/log15.v2"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
-	"os"
-	"os/signal"
-	"runtime"
-	"syscall"
 )
 
 // Default configuration file location:
@@ -52,7 +52,7 @@ type config struct {
 }
 
 func parseConfig(configFile string) (config config, err error) {
-	configText, err := ioutil.ReadFile(configFile)
+	configText, err := os.ReadFile(configFile)
 	if err != nil {
 		return config, err
 	}
