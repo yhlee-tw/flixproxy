@@ -262,7 +262,7 @@ func (dnsProxy *DNSProxy) ServeDNS(w dns.ResponseWriter, req *dns.Msg) {
 			response.SetRcode(req, dns.RcodeServerFailure)
 		}
 	}
-	w.WriteMsg(response)
+	_ = w.WriteMsg(response)
 }
 
 // eof

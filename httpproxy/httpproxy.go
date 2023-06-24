@@ -71,7 +71,7 @@ func (httpProxy *HTTPProxy) Stop() {
 func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 	defer downstream.Close()
 
-	util.SetDeadlineSeconds(downstream, httpProxy.config.Deadline)
+	_ = util.SetDeadlineSeconds(downstream, httpProxy.config.Deadline)
 
 	logger := httpProxy.logger.New("src", downstream.RemoteAddr())
 
@@ -123,7 +123,7 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 			proxyProtocol = httpProxy.config.ProxyProto
 		}
 	}
-	if strings.Index(hostname, ":") == -1 {
+	if !strings.Contains(hostname, ":") {
 		hostname = hostname + ":" + httpProxy.config.Upstreamport
 	}
 	logger = logger.New("upstream", hostname)
@@ -155,7 +155,7 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 	defer upstream.Close()
 	logger.Debug("connected to upstream")
 
-	util.SetDeadlineSeconds(upstream, httpProxy.config.Deadline)
+	_ = util.SetDeadlineSeconds(upstream, httpProxy.config.Deadline)
 
 	// write proxy protocol to upstream
 	if proxyProtocol {
@@ -183,8 +183,8 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 		return
 	}
 	// reset current deadlines
-	util.SetDeadlineSeconds(upstream, 0)
-	util.SetDeadlineSeconds(downstream, 0)
+	_ = util.SetDeadlineSeconds(upstream, 0)
+	_ = util.SetDeadlineSeconds(downstream, 0)
 
 	util.Proxy(upstream, downstream, httpProxy.config.Idle)
 }

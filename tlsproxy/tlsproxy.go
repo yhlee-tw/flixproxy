@@ -69,7 +69,7 @@ func (tlsProxy *TLSProxy) Stop() {
 func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 	defer downstream.Close()
 
-	util.SetDeadlineSeconds(downstream, tlsProxy.config.Deadline)
+	_ = util.SetDeadlineSeconds(downstream, tlsProxy.config.Deadline)
 
 	logger := tlsProxy.logger.New("src", downstream.RemoteAddr())
 
@@ -167,7 +167,7 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 	defer upstream.Close()
 	logger.Debug("connected to upstream")
 
-	util.SetDeadlineSeconds(upstream, tlsProxy.config.Deadline)
+	_ = util.SetDeadlineSeconds(upstream, tlsProxy.config.Deadline)
 
 	// write proxy protocol to upstream
 	if proxyProtocol {
@@ -181,8 +181,8 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 		return
 	}
 	// reset current deadlines
-	util.SetDeadlineSeconds(upstream, 0)
-	util.SetDeadlineSeconds(downstream, 0)
+	_ = util.SetDeadlineSeconds(upstream, 0)
+	_ = util.SetDeadlineSeconds(downstream, 0)
 
 	util.Proxy(upstream, downstream, tlsProxy.config.Idle)
 }

@@ -110,10 +110,10 @@ func main() {
 			tlsproxy.New(proxyConfig, config.Acl.GetAcl(proxyConfig.Acl), logger.New("s", "TLS")))
 	}
 
-	sigCexit := make(chan os.Signal)
+	sigCexit := make(chan os.Signal, 1)
 	signal.Notify(sigCexit, syscall.SIGTERM, syscall.SIGINT) // terminate gracefully
 
-	sigChup := make(chan os.Signal)
+	sigChup := make(chan os.Signal, 1)
 	signal.Notify(sigChup, syscall.SIGHUP) // reopen logs
 
 	logger.Info("entering main loop")

@@ -69,10 +69,10 @@ func SetWriteDeadlineSeconds(conn net.Conn, seconds int64) (err error) {
 func CopyWithIdleTimeout(dst net.Conn, src net.Conn, timeout int64) (written int64, err error) {
 	buf := make([]byte, 32*1024)
 	for {
-		SetReadDeadlineSeconds(src, timeout)
+		_ = SetReadDeadlineSeconds(src, timeout)
 		nr, er := src.Read(buf)
 		if nr > 0 {
-			SetWriteDeadlineSeconds(dst, timeout)
+			_ = SetWriteDeadlineSeconds(dst, timeout)
 			nw, ew := dst.Write(buf[0:nr])
 			if nw > 0 {
 				written += int64(nw)
@@ -161,11 +161,11 @@ func Proxy(srvConn, cliConn *net.TCPConn, timeout int64) {
 		// the client closed first and any more packets from the
 		// server aren't useful, so we can optionally SetLinger(0)
 		// here to recycle the port faster.
-		srvConn.SetLinger(0)
-		srvConn.CloseRead()
+		_ = srvConn.SetLinger(0)
+		_ = srvConn.CloseRead()
 		waitFor = serverClosed
 	case <-serverClosed:
-		cliConn.CloseRead()
+		_ = cliConn.CloseRead()
 		waitFor = clientClosed
 	}
 
@@ -183,15 +183,7 @@ func broker(dst, src net.Conn, srcClosed chan struct{}, timeout int64) {
 	// io.Copy (it's simple, and we drop the ReaderFrom or WriterTo
 	// checks for net.Conn->net.Conn transfers, which aren't needed).
 	// This would also let us adjust buffersize.
-	_, err := CopyWithIdleTimeout(dst, src, timeout)
-
-	if err != nil {
-		// log.Printf("Copy error: %s", err)
-	}
-	if err := src.Close(); err != nil {
-		// log.Printf("Close error: %s", err)
-	}
+	_, _ = CopyWithIdleTimeout(dst, src, timeout)
+	_ = src.Close()
 	srcClosed <- struct{}{}
 }
-
-// eof
