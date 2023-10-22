@@ -3,7 +3,7 @@ module github.com/snabb/flixproxy
 go 1.20
 
 require (
-	github.com/miekg/dns v1.1.55
+	github.com/miekg/dns v1.1.56
 	github.com/ogier/pflag v0.0.1
 	github.com/pires/go-proxyproto v0.7.0
 	github.com/ryanuber/go-glob v1.0.0
@@ -14,10 +14,10 @@ require (
 require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
-	golang.org/x/mod v0.11.0 // indirect
-	golang.org/x/net v0.11.0 // indirect
-	golang.org/x/sys v0.9.0 // indirect
-	golang.org/x/term v0.9.0 // indirect
-	golang.org/x/tools v0.10.0 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	golang.org/x/mod v0.13.0 // indirect
+	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/tools v0.14.0 // indirect
 )
