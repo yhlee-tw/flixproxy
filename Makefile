@@ -1,7 +1,8 @@
 BUILD_DIR := build
 PLATFORMS := darwin_amd64 linux_arm64
 CROSS_TARGETS := $(PLATFORMS:%=$(BUILD_DIR)/%/flixproxy)
-UPX_TARGETS := $(PLATFORMS:%=$(BUILD_DIR)/%/flixproxy.upx)
+UPX_PLATFORMS := $(filter-out darwin_%,$(PLATFORMS))
+UPX_TARGETS := $(UPX_PLATFORMS:%=$(BUILD_DIR)/%/flixproxy.upx)
 
 SRCS := $(shell find . -name "*.go")
 
