@@ -12,7 +12,7 @@ SRCS := $(shell find . -name "*.go")
 VERSION := $(shell git describe --tags --dirty)
 EXTRA_LDFLAGS += -X \"main.VERSION=$(VERSION)\"
 
-UPX_FLAGS ?= $(if $(V),,-q) -9 --brute
+UPX_FLAGS ?= $(if $(V),,-q) -9 --lzma
 
 compile:
 	go build -ldflags="$(EXTRA_LDFLAGS)" .
