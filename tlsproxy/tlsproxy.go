@@ -22,6 +22,8 @@
 package tlsproxy
 
 import (
+	"bytes"
+	"crypto/tls"
 	"io"
 	"net"
 
@@ -47,6 +49,18 @@ type Config struct {
 	SNIOnly      bool
 	Deadline     int64
 	Idle         int64
+}
+
+type replayConn struct {
+	net.Conn
+	replay *bytes.Buffer
+}
+
+func (c replayConn) Read(b []byte) (int, error) {
+	if c.replay != nil && c.replay.Len() > 0 {
+		return c.replay.Read(b)
+	}
+	return c.Conn.Read(b)
 }
 
 func New(config Config, access access.Checker, logger log15.Logger) (tlsProxy *TLSProxy) {
@@ -130,10 +144,16 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 		logger.Warn("error parsing ClientHello")
 		return
 	}
+	peeked := append(append(append(firstByte, versionBytes...), restLengthBytes...), rest...)
 	target := m.serverName + ":" + tlsProxy.config.Upstreamport
 	proxyProtocol := false
 	if m.serverName == "" {
 		if tlsProxy.config.SNIOnly {
+			c := replayConn{
+				Conn:   downstream,
+				replay: bytes.NewBuffer(peeked),
+			}
+			_ = tls.Server(c, &tls.Config{}).Handshake()
 			return
 		}
 		if tlsProxy.config.Fallback == "" {
@@ -180,7 +200,7 @@ func (tlsProxy *TLSProxy) HandleConn(downstream *net.TCPConn) {
 			return
 		}
 	}
-	if _, err = upstream.Write(append(append(append(firstByte, versionBytes...), restLengthBytes...), rest...)); err != nil {
+	if _, err = upstream.Write(peeked); err != nil {
 		logger.Error("error writing to upstream", "err", err)
 		return
 	}
