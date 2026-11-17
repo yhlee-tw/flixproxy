@@ -115,7 +115,7 @@ func (m *clientHelloMsg) unmarshal(data []byte) bool {
 	}
 	numCipherSuites := cipherSuiteLen / 2
 	m.cipherSuites = make([]uint16, numCipherSuites)
-	for i := 0; i < numCipherSuites; i++ {
+	for i := range numCipherSuites {
 		m.cipherSuites[i] = uint16(data[2+2*i])<<8 | uint16(data[3+2*i])
 		if m.cipherSuites[i] == scsvRenegotiation {
 			m.secureRenegotiation = true
@@ -173,7 +173,7 @@ func (m *clientHelloMsg) unmarshal(data []byte) bool {
 			}
 			numNames := int(data[0])<<8 | int(data[1])
 			d := data[2:]
-			for i := 0; i < numNames; i++ {
+			for range numNames {
 				if len(d) < 3 {
 					return false
 				}
@@ -208,7 +208,7 @@ func (m *clientHelloMsg) unmarshal(data []byte) bool {
 			numCurves := l / 2
 			m.supportedCurves = make([]CurveID, numCurves)
 			d := data[2:]
-			for i := 0; i < numCurves; i++ {
+			for i := range numCurves {
 				m.supportedCurves[i] = CurveID(d[0])<<8 | CurveID(d[1])
 				d = d[2:]
 			}

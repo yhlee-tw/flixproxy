@@ -108,8 +108,8 @@ func (httpProxy *HTTPProxy) HandleConn(downstream *net.TCPConn) {
 			// end of HTTP headers
 			break
 		}
-		if strings.HasPrefix(line, "Host:") {
-			hostname = strings.TrimPrefix(line, "Host:")
+		if after, ok := strings.CutPrefix(line, "Host:"); ok {
+			hostname = after
 			hostname = strings.TrimSpace(hostname)
 			break
 		}

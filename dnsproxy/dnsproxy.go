@@ -56,7 +56,7 @@ func (spoof *rrSlice) unmarshalAny(spoofString string) (err error) {
 	spoof.rrs = make(map[string][]dns.RR)
 	spoof.wildRrs = make(map[string][]dns.RR)
 
-	for _, line := range strings.Split(spoofString, "\n") {
+	for line := range strings.SplitSeq(spoofString, "\n") {
 		line = strings.TrimSpace(line)
 
 		if len(line) == 0 {
@@ -81,7 +81,7 @@ func (spoof *rrSlice) unmarshalAny(spoofString string) (err error) {
 	return err
 }
 
-func (spoof *rrSlice) UnmarshalYAML(unmarshal func(v interface{}) error) (err error) {
+func (spoof *rrSlice) UnmarshalYAML(unmarshal func(v any) error) (err error) {
 	var spoofString string
 	if err = unmarshal(&spoofString); err != nil {
 		return err
@@ -89,7 +89,7 @@ func (spoof *rrSlice) UnmarshalYAML(unmarshal func(v interface{}) error) (err er
 	return spoof.unmarshalAny(spoofString)
 }
 
-func (spoof *rrSlice) UnmarshalTOML(d interface{}) (err error) {
+func (spoof *rrSlice) UnmarshalTOML(d any) (err error) {
 	spoofString, ok := d.(string)
 	if !ok {
 		return errors.New("Expected string")
@@ -157,7 +157,7 @@ func (dnsProxy *DNSProxy) checkVersionQuestion(req *dns.Msg) (answer *dns.Msg) {
 
 func shuffleRRs(rr []dns.RR) (shuffled []dns.RR) {
 	N := len(rr)
-	for i := 0; i < N; i++ {
+	for i := range N {
 		r := i + rand.Intn(N-i)
 		rr[r], rr[i] = rr[i], rr[r]
 	}
